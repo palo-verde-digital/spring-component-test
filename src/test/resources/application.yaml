@@ -1,0 +1,4 @@
+spring:
+  component-test:
+    infrastructure:
+      load: ALWAYS
