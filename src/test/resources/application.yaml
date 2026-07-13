@@ -2,3 +2,12 @@ spring:
   component-test:
     infrastructure:
       load: ALWAYS
+      db:
+        postgres:
+          image: postgres:alpine
+          scripts:
+            - sql/test-database.sql
+  datasource:
+    url: jdbc:postgresql://localhost:5432/test_database
+    username: postgres
+    password: postgres

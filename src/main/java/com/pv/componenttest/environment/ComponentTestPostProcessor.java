@@ -36,7 +36,9 @@ public class ComponentTestPostProcessor implements EnvironmentPostProcessor {
     );
 
     public ComponentTestPostProcessor(DeferredLogFactory logFactory) {
+
         logger = logFactory.getLog(getClass());
+
     }
 
     @Override
@@ -69,17 +71,22 @@ public class ComponentTestPostProcessor implements EnvironmentPostProcessor {
 
     private Resource createInfrastructureDefinition(ConfigurableEnvironment environment) {
 
+        var jdbcEnvironment = EnvironmentJDBC.detect(environment);
+
         return null;
 
     }
 
     private Resource verifyInfrastructureDefinition(ConfigurableEnvironment environment, Resource infrastructureDefinition) {
 
+        var jdbcEnvironment = EnvironmentJDBC.detect(environment);
+
         return infrastructureDefinition;
 
     }
 
     private <T extends Enum<T>> T loadConfig(String propertyValue, Class<T> valueSet, T defaultValue) {
+
         var configValue = Arrays.stream(valueSet.getEnumConstants())
                 .filter(value -> value.name().equalsIgnoreCase(propertyValue))
                 .findFirst()
@@ -88,10 +95,13 @@ public class ComponentTestPostProcessor implements EnvironmentPostProcessor {
         if(configValue == null) {
             logConfigError(configPaths.get(valueSet), propertyValue, defaultValue.name());
 
-            return defaultValue;
+            configValue = defaultValue;
         }
 
+        logger.info("Loaded " + configPaths.get(valueSet) + "=" + configValue.name());
+
         return configValue;
+
     }
 
     private void logConfigError(String configPath, String providedValue, String fallbackValue) {
