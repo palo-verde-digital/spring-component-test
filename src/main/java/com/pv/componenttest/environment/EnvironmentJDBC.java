@@ -1,5 +1,6 @@
 package com.pv.componenttest.environment;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -33,28 +34,47 @@ class EnvironmentJDBC {
 
         var binder = Binder.get(environment);
 
-        var dataSourceProps = loadDataSourceProperties(environment, binder);
+        var dataSourceProps = loadDataSourceProperties(binder);
+        var dataSourceScripts = loadDataSourceScripts(binder);
 
-        var dataSourceScripts = binder.bind(POSTGRES_SCRIPTS_CONFIG, Bindable.listOf(String.class))
-                .orElse(null);
+        if (dataSourceProps == null && dataSourceScripts == null) {
+            return null;
+        }
 
-        return null;
+        var jdbcEnvironment = new HashMap<String, String>();
+
+        return jdbcEnvironment;
 
     }
 
-    private static List<Map.Entry<String, DataSourceProperties>> loadDataSourceProperties(ConfigurableEnvironment environment, Binder binder) {
+    private static List<Map.Entry<String, DataSourceProperties>> loadDataSourceProperties(Binder binder) {
 
         var dataSourcePaths = binder.bind(POSTGRES_DATABASES_CONFIG, Bindable.listOf(String.class))
                 .orElse(List.of(POSTGRES_DATABASES_DEFAULT));
 
-        return dataSourcePaths.stream()
-                .map(path -> validateDataSourcePath(binder, path))
+        var dataSourceProperties = dataSourcePaths.stream()
+                .map(path -> dataSourcePropertiesForPath(binder, path))
                 .filter(entry -> entry != null)
                 .toList();
 
+        return dataSourceProperties.isEmpty()
+            ? null
+            : dataSourceProperties;
+
     }
 
-    private static Map.Entry<String, DataSourceProperties> validateDataSourcePath(Binder binder, String path) {
+    private static List<String> loadDataSourceScripts(Binder binder) {
+
+        var dataSourceScripts = binder.bind(POSTGRES_SCRIPTS_CONFIG, Bindable.listOf(String.class))
+                .orElse(null);
+
+        return dataSourceScripts == null || dataSourceScripts.isEmpty()
+            ? null
+            : dataSourceScripts;
+
+    }
+
+    private static Map.Entry<String, DataSourceProperties> dataSourcePropertiesForPath(Binder binder, String path) {
 
         var dataSourceProperties = binder.bind(path, DataSourceProperties.class)
                 .orElse(null);

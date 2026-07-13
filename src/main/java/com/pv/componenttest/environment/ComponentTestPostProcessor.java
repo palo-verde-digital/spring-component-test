@@ -72,6 +72,11 @@ public class ComponentTestPostProcessor implements EnvironmentPostProcessor {
     private Resource createInfrastructureDefinition(ConfigurableEnvironment environment) {
 
         var jdbcEnvironment = EnvironmentJDBC.detect(environment);
+        if(jdbcEnvironment != null) {
+            // TODO: write to compose
+        } else {
+            logger.info("No JDBC definitions detected.");
+        }
 
         return null;
 
@@ -79,7 +84,14 @@ public class ComponentTestPostProcessor implements EnvironmentPostProcessor {
 
     private Resource verifyInfrastructureDefinition(ConfigurableEnvironment environment, Resource infrastructureDefinition) {
 
+        // TODO: read existing from compose to map
+
         var jdbcEnvironment = EnvironmentJDBC.detect(environment);
+        if(jdbcEnvironment != null) {
+            // TODO: merge existing and detected
+
+            // TODO: write to compose
+        }
 
         return infrastructureDefinition;
 
@@ -93,7 +105,7 @@ public class ComponentTestPostProcessor implements EnvironmentPostProcessor {
                 .orElse(null);
 
         if(configValue == null) {
-            logConfigError(configPaths.get(valueSet), propertyValue, defaultValue.name());
+            logger.info("Invalid value '" + propertyValue + "' detected at '" + configPaths.get(valueSet) + "'. Will use default value of '" + defaultValue.name() +"'");
 
             configValue = defaultValue;
         }
@@ -101,12 +113,6 @@ public class ComponentTestPostProcessor implements EnvironmentPostProcessor {
         logger.info("Loaded " + configPaths.get(valueSet) + "=" + configValue.name());
 
         return configValue;
-
-    }
-
-    private void logConfigError(String configPath, String providedValue, String fallbackValue) {
-
-        logger.info("Invalid value '" + providedValue + "' detected at '" + configPath + "'. Will use default value of '" + fallbackValue +"'");
 
     }
 
