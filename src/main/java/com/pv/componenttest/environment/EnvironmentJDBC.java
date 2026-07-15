@@ -45,24 +45,21 @@ class EnvironmentJDBC {
         var jdbcEnvironment = new HashMap<String, String>();
 
         for (var props: dataSourceProps) {
-            var dataSourceName = props.getValue().getName();
-            var dataSourceUsername = props.getValue().getUsername();
-            var dataSourcePassword = props.getValue().getPassword();
+            var dataSourceName = props.getName();
 
             jdbcEnvironment.put(dataSourceName + ".script_name", scriptFor(dataSourceScripts, dataSourceName));
-            jdbcEnvironment.put(dataSourceName + ".user", dataSourceUsername);
-            jdbcEnvironment.put(dataSourceName + ".password", dataSourcePassword);
+            jdbcEnvironment.put(dataSourceName + ".user", props.getUsername());
+            jdbcEnvironment.put(dataSourceName + ".password", props.getPassword());
             jdbcEnvironment.put(dataSourceName + ".type", "postgres");
         }
 
-        var postgresImage = ;
         jdbcEnvironment.put("postgres.image", environment.getProperty(POSTGRES_IMAGE_CONFIG, POSTGRES_IMAGE_DEFAULT));
 
         return jdbcEnvironment;
 
     }
 
-    private static List<Map.Entry<String, DataSourceProperties>> loadDataSourceProperties(Binder binder) {
+    private static List<DataSourceProperties> loadDataSourceProperties(Binder binder) {
 
         var dataSourcePaths = binder.bind(POSTGRES_DATABASES_CONFIG, Bindable.listOf(String.class))
                 .orElse(List.of(POSTGRES_DATABASES_DEFAULT));
@@ -89,7 +86,7 @@ class EnvironmentJDBC {
 
     }
 
-    private static Map.Entry<String, DataSourceProperties> dataSourcePropertiesForPath(Binder binder, String path) {
+    private static DataSourceProperties dataSourcePropertiesForPath(Binder binder, String path) {
 
         var dataSourceProperties = binder.bind(path, DataSourceProperties.class)
                 .orElse(null);
@@ -98,7 +95,7 @@ class EnvironmentJDBC {
             && DB_HAS_POSTGRES_PREFIX.or(DB_HAS_POSTGRES_DRIVER).test(dataSourceProperties);
 
         return validDataSourceProperties
-            ? Map.entry(path, dataSourceProperties)
+            ? dataSourceProperties
             : null;
 
     }

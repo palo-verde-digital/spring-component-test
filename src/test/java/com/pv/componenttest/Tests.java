@@ -1,11 +1,15 @@
 package com.pv.componenttest;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 
-@ComponentTest
 public class Tests {
 
     @Test
-    public void test() {}
+    public void test() {
+
+        new SpringApplicationBuilder(App.class).run();
+
+    }
 
 }
