@@ -1,5 +1,6 @@
 package com.pv.componenttest.environment;
 
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,20 @@ class EnvironmentJDBC {
 
         var jdbcEnvironment = new HashMap<String, String>();
 
+        for (var props: dataSourceProps) {
+            var dataSourceName = props.getValue().getName();
+            var dataSourceUsername = props.getValue().getUsername();
+            var dataSourcePassword = props.getValue().getPassword();
+
+            jdbcEnvironment.put(dataSourceName + ".script_name", scriptFor(dataSourceScripts, dataSourceName));
+            jdbcEnvironment.put(dataSourceName + ".user", dataSourceUsername);
+            jdbcEnvironment.put(dataSourceName + ".password", dataSourcePassword);
+            jdbcEnvironment.put(dataSourceName + ".type", "postgres");
+        }
+
+        var postgresImage = ;
+        jdbcEnvironment.put("postgres.image", environment.getProperty(POSTGRES_IMAGE_CONFIG, POSTGRES_IMAGE_DEFAULT));
+
         return jdbcEnvironment;
 
     }
@@ -85,6 +100,22 @@ class EnvironmentJDBC {
         return validDataSourceProperties
             ? Map.entry(path, dataSourceProperties)
             : null;
+
+    }
+
+    private static String scriptFor(List<String> scripts, String databaseName) {
+
+        var matchingScripts = scripts.stream()
+                .map(script -> Paths.get(script).getFileName().toString())
+                .map(scriptFile -> scriptFile.split("\\.")[0])
+                .filter(scriptName -> scriptName.equals(databaseName))
+                .toList();
+
+        if (matchingScripts.size() != 1) {
+            throw new IllegalStateException("No initialization script detected for database '" + databaseName + "'");
+        }
+
+        return matchingScripts.getFirst();
 
     }
 

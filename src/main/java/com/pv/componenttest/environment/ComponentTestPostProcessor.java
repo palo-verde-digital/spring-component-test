@@ -73,7 +73,7 @@ public class ComponentTestPostProcessor implements EnvironmentPostProcessor {
 
         var jdbcEnvironment = EnvironmentJDBC.detect(environment);
         if(jdbcEnvironment != null) {
-            // TODO: write to compose
+            logger.info("Detected JDBC environment: " + jdbcEnvironment.toString());
         } else {
             logger.info("No JDBC definitions detected.");
         }
