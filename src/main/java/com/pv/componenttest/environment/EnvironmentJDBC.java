@@ -1,5 +1,7 @@
 package com.pv.componenttest.environment;
 
+import static com.pv.componenttest.environment.ComponentTestPostProcessor.ROOT_CONFIG;
+
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
@@ -13,12 +15,12 @@ import org.springframework.core.env.ConfigurableEnvironment;
 
 class EnvironmentJDBC {
 
-    private static final String ROOT_CONFIG = "spring.component-test.db";
+    static final String DB_CONFIG = ROOT_CONFIG + ".db";
 
-    private static final String POSTGRES_CONFIG = ROOT_CONFIG + ".postgres";
+    private static final String POSTGRES_CONFIG = DB_CONFIG + ".postgres";
 
     private static final String POSTGRES_IMAGE_CONFIG = POSTGRES_CONFIG + ".image";
-    private static final String POSTGRES_IMAGE_DEFAULT = "postgres:alpine";
+    private static final String POSTGRES_IMAGE_DEFAULT = "classpath:postgres:alpine";
 
     private static final String POSTGRES_DATABASES_CONFIG = POSTGRES_CONFIG + ".databases";
     private static final String POSTGRES_DATABASES_DEFAULT = "spring.datasource";
@@ -31,7 +33,7 @@ class EnvironmentJDBC {
     private static Predicate<DataSourceProperties> DB_HAS_POSTGRES_PREFIX = props -> props.getUrl() != null && props.getUrl().startsWith(POSTGRES_JDBC_PREFIX);
     private static Predicate<DataSourceProperties> DB_HAS_POSTGRES_DRIVER = props -> props.getDriverClassName() != null && props.getDriverClassName().equals(POSTGRES_JDBC_DRIVER);
 
-    static Map<String, String> detect(ConfigurableEnvironment environment) {
+    static Map<String, Object> detect(ConfigurableEnvironment environment) {
 
         var binder = Binder.get(environment);
 
@@ -42,7 +44,7 @@ class EnvironmentJDBC {
             return null;
         }
 
-        var jdbcEnvironment = new HashMap<String, String>();
+        var jdbcEnvironment = new HashMap<String, Object>();
 
         for (var props: dataSourceProps) {
             var dataSourceName = props.getName();
