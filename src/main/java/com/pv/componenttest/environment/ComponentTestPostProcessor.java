@@ -2,10 +2,8 @@ package com.pv.componenttest.environment;
 
 import static org.yaml.snakeyaml.DumperOptions.FlowStyle.BLOCK;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -16,21 +14,19 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.logging.DeferredLogFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.ResourceLoader;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
+
+import com.pv.componenttest.infrastructure.db.DB;
 
 @Order
 public class ComponentTestPostProcessor implements EnvironmentPostProcessor {
 
     private final Log logger;
 
-    static final String ROOT_CONFIG = "spring.component-test";
+    public static final String ROOT_CONFIG = "spring.component-test";
 
     private static final Path COMPOSE_LOCATION = Path.of("target/test-classes/docker/compose.yaml");
-
-    private static final ResourceLoader resourceLoader = new DefaultResourceLoader();
 
     public ComponentTestPostProcessor(DeferredLogFactory logFactory) {
 
@@ -41,7 +37,7 @@ public class ComponentTestPostProcessor implements EnvironmentPostProcessor {
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
 
-        var jdbcEnvironment = EnvironmentJDBC.detect(environment);
+        var jdbcEnvironment = DB.detect(environment, logger);
         if(jdbcEnvironment != null) {
             logger.info("Detected JDBC environment: " + jdbcEnvironment.toString());
         } else {
