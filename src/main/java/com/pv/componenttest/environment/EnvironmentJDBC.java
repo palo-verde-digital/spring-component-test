@@ -13,7 +13,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
 
 class EnvironmentJDBC {
 
-    private static final String ROOT_CONFIG = "spring.component-test.infrastructure.db";
+    private static final String ROOT_CONFIG = "spring.component-test.db";
 
     private static final String POSTGRES_CONFIG = ROOT_CONFIG + ".postgres";
 

@@ -1,39 +1,16 @@
 package com.pv.componenttest.environment;
 
-import java.util.Arrays;
-import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.logging.DeferredLogFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-
-import com.pv.componenttest.environment.option.LoadOption;
 
 @Order
 public class ComponentTestPostProcessor implements EnvironmentPostProcessor {
 
-    private final ResourceLoader resourceLoader = new DefaultResourceLoader();
     private final Log logger;
-
-    private static final String ROOT_CONFIG = "spring.component-test";
-
-    private static final String INFRASTRUCTURE_CONFIG = ROOT_CONFIG + ".infrastructure";
-
-    private static final String INFRASTRUCTURE_PATH_CONFIG = INFRASTRUCTURE_CONFIG + ".path";
-    private static final String INFRASTRUCTURE_PATH_DEFAULT = "docker/compose.yaml";
-
-    private static final String INFRASTRUCTURE_LOAD_CONFIG = INFRASTRUCTURE_CONFIG + ".load";
-    private static final String INFRASTRUCTURE_LOAD_DEFAULT = LoadOption.ALWAYS.name();
-
-    private static final Map<Class<? extends Enum<?>>, String> configPaths = Map.ofEntries(
-        Map.entry(LoadOption.class, INFRASTRUCTURE_LOAD_CONFIG)
-    );
 
     public ComponentTestPostProcessor(DeferredLogFactory logFactory) {
 
@@ -44,75 +21,12 @@ public class ComponentTestPostProcessor implements EnvironmentPostProcessor {
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
 
-        loadInfrastructureDefinition(environment);
-
-    }
-
-    private Resource loadInfrastructureDefinition(ConfigurableEnvironment environment) {
-
-        var infrastructurePath = environment.getProperty(INFRASTRUCTURE_PATH_CONFIG, INFRASTRUCTURE_PATH_DEFAULT);
-        var infrastructureDefinition = resourceLoader.getResource(infrastructurePath);
-
-        if (!infrastructureDefinition.exists()) {
-            logger.info("No infrastructure definition found at '" + infrastructurePath + "'. Infrastructure definition will be created.");
-
-            return createInfrastructureDefinition(environment);
-        }
-
-        var infrastructureLoadProperty = environment.getProperty(INFRASTRUCTURE_LOAD_CONFIG, INFRASTRUCTURE_LOAD_DEFAULT);
-        var infrastructureLoad = loadConfig(infrastructureLoadProperty, LoadOption.class, LoadOption.ALWAYS);
-
-        return switch (infrastructureLoad) {
-           	case ALWAYS -> createInfrastructureDefinition(environment);
-            case ON_UPDATE -> verifyInfrastructureDefinition(environment, infrastructureDefinition);
-        };
-
-    }
-
-    private Resource createInfrastructureDefinition(ConfigurableEnvironment environment) {
-
         var jdbcEnvironment = EnvironmentJDBC.detect(environment);
         if(jdbcEnvironment != null) {
             logger.info("Detected JDBC environment: " + jdbcEnvironment.toString());
         } else {
             logger.info("No JDBC definitions detected.");
         }
-
-        return null;
-
-    }
-
-    private Resource verifyInfrastructureDefinition(ConfigurableEnvironment environment, Resource infrastructureDefinition) {
-
-        // TODO: read existing from compose to map
-
-        var jdbcEnvironment = EnvironmentJDBC.detect(environment);
-        if(jdbcEnvironment != null) {
-            // TODO: merge existing and detected
-
-            // TODO: write to compose
-        }
-
-        return infrastructureDefinition;
-
-    }
-
-    private <T extends Enum<T>> T loadConfig(String propertyValue, Class<T> valueSet, T defaultValue) {
-
-        var configValue = Arrays.stream(valueSet.getEnumConstants())
-                .filter(value -> value.name().equalsIgnoreCase(propertyValue))
-                .findFirst()
-                .orElse(null);
-
-        if(configValue == null) {
-            logger.info("Invalid value '" + propertyValue + "' detected at '" + configPaths.get(valueSet) + "'. Will use default value of '" + defaultValue.name() +"'");
-
-            configValue = defaultValue;
-        }
-
-        logger.info("Loaded " + configPaths.get(valueSet) + "=" + configValue.name());
-
-        return configValue;
 
     }
 
