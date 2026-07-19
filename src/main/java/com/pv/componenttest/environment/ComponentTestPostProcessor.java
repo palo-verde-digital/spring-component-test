@@ -6,6 +6,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -37,15 +39,24 @@ public class ComponentTestPostProcessor implements EnvironmentPostProcessor {
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
 
-        var jdbcEnvironment = DB.detect(environment, logger);
-        if(jdbcEnvironment != null) {
-            logger.info("Detected JDBC environment: " + jdbcEnvironment.toString());
+        var services = new HashMap<String, Object>();
+
+        var dbServices = DB.detect(environment, logger);
+        if(dbServices != null) {
+
+            for(var dbService: dbServices.entrySet()) {
+                services.put(dbService.getKey(), dbService.getValue());
+            }
+
         } else {
-            logger.info("No JDBC definitions detected.");
+            logger.info("No DB definitions detected.");
         }
 
+        var compose = new HashMap<String, Object>();
+        compose.put("services", services);
+
         try {
-            writeCompose(jdbcEnvironment);
+            writeCompose(compose);
         } catch (IOException e) {
             logger.error("Unable to write compose file: " + e.getMessage());
         }

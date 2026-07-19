@@ -14,14 +14,11 @@ import org.springframework.core.env.ConfigurableEnvironment;
 
 public class DB {
 
-    static class DBServiceDescriptor {
-
-        String image;
-
-        List<String> databases;
-        List<String> scripts;
-
-    }
+    static record DBServiceDescriptor (
+        String image,
+        List<String> databases,
+        List<String> scripts
+    ){}
 
     static final String DB_CONFIG = ROOT_CONFIG + ".db";
 
@@ -37,10 +34,12 @@ public class DB {
             return null;
         }
 
+        logger.info("Found " + Integer.toString(dbServiceDescriptors.size()) + " DB service descriptor(s)");
+
         var dbServices = new HashMap<String, Object>();
 
         for(var dbServiceDescriptor: dbServiceDescriptors.entrySet()) {
-            var dbService = configureService(dbServiceDescriptor);
+            var dbService = configureService(dbServiceDescriptor, logger);
 
             if (dbService != null) {
                 dbServices.put(dbServiceDescriptor.getKey(), dbService);
@@ -51,10 +50,10 @@ public class DB {
 
     }
 
-    private static Map<String, Object> configureService(Entry<String, DBServiceDescriptor> dbServiceDescriptor) {
+    private static Map<String, Object> configureService(Entry<String, DBServiceDescriptor> dbServiceDescriptor, Log logger) {
 
         return switch(dbServiceDescriptor.getKey()) {
-            case DB_POSTGRES -> DBPostgres.writeService(dbServiceDescriptor.getValue());
+            case DB_POSTGRES -> DBPostgres.writeService(dbServiceDescriptor.getValue(), logger);
             default -> null;
         };
 
