@@ -7,8 +7,8 @@ spring:
           - spring.datasource.primary
           - spring.datasource.secondary
         scripts:
-          - sql/primary_test_database.sql
-          - sql/secondary_test_database.sql
+          - primary_test_database.sql
+          - secondary_test_database.sql
   datasource:
     primary:
       name: primary_test_database

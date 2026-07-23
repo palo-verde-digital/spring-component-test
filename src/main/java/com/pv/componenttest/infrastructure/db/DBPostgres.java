@@ -1,5 +1,6 @@
 package com.pv.componenttest.infrastructure.db;
 
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,9 @@ class DBPostgres {
     private static final String POSTGRES_IMAGE = "postgres:alpine";
     private static final String POSTGRES_CONTAINER = "postgres_container";
     private static final String POSTGRES_RESTART = "always";
+
+    private static final Path SCRIPT_ORIGIN = Path.of("target/test-classes/sql");
+    private static final Path SCRIPT_DESTINATION = Path.of("target/test-classes/sql/postgres");
 
     private static final List<String> POSTGRES_PORTS = List.of("5432:5432");
 
