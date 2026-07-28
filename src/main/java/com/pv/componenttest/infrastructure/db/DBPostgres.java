@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import org.apache.commons.logging.Log;
 
+import com.pv.componenttest.infrastructure.db.DB.DBConfig;
 import com.pv.componenttest.infrastructure.db.DB.DBServiceDescriptor;
 
 class DBPostgres {
@@ -26,7 +27,7 @@ class DBPostgres {
         Map.entry("POSTGRES_PASSWORD", "postgres")
     );
 
-    static Map<String, Object> writeService(DBServiceDescriptor dbServiceDescriptor, Log logger) {
+    static Map<String, Object> writeService(DBServiceDescriptor dbServiceDescriptor, List<DBConfig> dbConfigs, Log logger) {
 
         logger.info("Creating postgres DB service");
 
